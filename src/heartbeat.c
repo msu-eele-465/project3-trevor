@@ -27,9 +27,6 @@ void heartbeat_init(const uint16_t half_period_ms)
     // Disable the timer before configuring to avoid unexpected behavior
     *TBCTL |= MC__STOP;
 
-    // Select the 32.768 kHz auxiliary clock as the clock source.
-    *TBCTL |= TBSSEL__ACLK;
-
     // Calculate the compare register value needed to achieve the desired timing
     // By default, we're going to use a 16-bit counter.
     // ACLK has a frequency of ~2^15, so a continous counter would overflow every 2 seconds.
@@ -42,11 +39,14 @@ void heartbeat_init(const uint16_t half_period_ms)
     // every half-period of our heartbeat LED.
     *TBCCR0 = heartbeat_half_period_clock_cycles;
 
-    // Use up counter mode
-    *TBCTL |= MC__UP;
-
     // Enable the capture/compare interrupt
     *TBCCTL0 |= CCIE;
+
+    // Select the 32.768 kHz auxiliary clock as the clock source.
+    *TBCTL |= TBSSEL__ACLK;
+
+    // Use up counter mode
+    *TBCTL |= MC__UP;
 
     // Configure the heartbeat LED pin as an output
     volatile uint16_t *PDIR = (uint16_t *)(HEARTBEAT_PORT_BASE_ADDR + OFS_P1DIR);
