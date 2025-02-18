@@ -8,7 +8,7 @@
  *
  * This module relies on preprocessor defines to configure itself:
  * - HEARTBEAT_TIMER_BASE_ADDR: base address of the timer module to use
- * - HEARTBEAT_TIMER_INTERRUPT_ADDR: address of the timer modules interrupt vector
+ * - HEARTBEAT_TIMER_VECTOR address of the timer modules interrupt vector
  * - HEARTBEAT_PORT_BASE_ADDR: base address of the GPIO port to use
  * - HEARTBEAT_PIN: bitmask for the pin to use (e.g., BIT0)
  */
@@ -71,10 +71,10 @@ void heartbeat_init(const uint16_t half_period_ms)
  * Heartbeat LED interrupt service routine.
  *
  * This toggles the GPIO port defined by HEARTBEAT_PIN and HEARTBEAT_PORT_BASE_ADDR.
- * HEARTBEAT_TIMER_INTERRUPT_ADDR specifies the address of the timer interrupt vector
+ * HEARTBEAT_TIMER_VECTOR specifies the address of the timer interrupt vector
  * we need to use (this needs to match the timer module we're using).
  */
-#pragma vector = HEARTBEAT_TIMER_INTERRUPT_ADDR
+#pragma vector = HEARTBEAT_TIMER_VECTOR
 __interrupt void heartbeat_isr(void)
 {
     volatile uint16_t *POUT = (uint16_t *)(HEARTBEAT_PORT_BASE_ADDR + OFS_P1OUT);
