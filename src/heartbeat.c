@@ -17,6 +17,15 @@
 
 #include "heartbeat.h"
 
+/**
+ * Initialize a heartbeat LED
+ *
+ * This function relies upon various #defines being set, as documented in the
+ * file-level documentation. A timer module is set to compare mode to create
+ * the timer interrupt for the heartbeat LED.
+ *
+ * @param half_period_ms Half-period of the heartbeat LED in ms.
+ */
 void heartbeat_init(const uint16_t half_period_ms)
 {
     // Calculate addresses of the timer registers. Even if we aren't using TB0, all the register
@@ -58,6 +67,13 @@ void heartbeat_init(const uint16_t half_period_ms)
     *POUT &= ~HEARTBEAT_PIN;
 }
 
+/**
+ * Heartbeat LED interrupt service routine.
+ *
+ * This toggles the GPIO port defined by HEARTBEAT_PIN and HEARTBEAT_PORT_BASE_ADDR.
+ * HEARTBEAT_TIMER_INTERRUPT_ADDR specifies the address of the timer interrupt vector
+ * we need to use (this needs to match the timer module we're using).
+ */
 #pragma vector = HEARTBEAT_TIMER_INTERRUPT_ADDR
 __interrupt void heartbeat_isr(void)
 {
