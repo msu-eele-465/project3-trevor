@@ -13,8 +13,9 @@
  * - HEARTBEAT_PIN: bitmask for the pin to use (e.g., BIT0)
  */
 
-#include "heartbeat.h"
 #include <msp430fr2355.h>
+
+#include "heartbeat.h"
 
 void heartbeat_init(const uint16_t half_period_ms)
 {
