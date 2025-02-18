@@ -25,7 +25,7 @@ void heartbeat_init(const uint16_t half_period_ms)
     volatile uint16_t *TBCCTL0 = (uint16_t *)(HEARTBEAT_TIMER_BASE_ADDR + OFS_TB0CCTL0);
 
     // Disable the timer before configuring to avoid unexpected behavior
-    *TBCTL |= MC__STOP;
+    *TBCTL &= ~MC_3;
 
     // Calculate the compare register value needed to achieve the desired timing
     // By default, we're going to use a 16-bit counter.
