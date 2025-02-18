@@ -17,6 +17,12 @@
 
 #include "heartbeat.h"
 
+static volatile uint16_t *TBxCTL = (uint16_t *)(HEARTBEAT_TIMER_BASE_ADDR + OFS_TB0CTL);
+static volatile uint16_t *TBxCCR0 = (uint16_t *)(HEARTBEAT_TIMER_BASE_ADDR + OFS_TB0CCR0);
+static volatile uint16_t *TBxCCTL0 = (uint16_t *)(HEARTBEAT_TIMER_BASE_ADDR + OFS_TB0CCTL0);
+static volatile uint16_t *PDIR = (uint16_t *)(HEARTBEAT_PORT_BASE_ADDR + OFS_P1DIR);
+static volatile uint16_t *POUT = (uint16_t *)(HEARTBEAT_PORT_BASE_ADDR + OFS_P1OUT);
+
 /**
  * Initialize a heartbeat LED
  *
@@ -28,14 +34,8 @@
  */
 void heartbeat_init(const uint16_t half_period_ms)
 {
-    // Calculate addresses of the timer registers. Even if we aren't using TB0, all the register
-    // offsets are the same for each Timer B module, so we can always use the TB0 offsets.
-    volatile uint16_t *TBCTL = (uint16_t *)(HEARTBEAT_TIMER_BASE_ADDR + OFS_TB0CTL);
-    volatile uint16_t *TBCCR0 = (uint16_t *)(HEARTBEAT_TIMER_BASE_ADDR + OFS_TB0CCR0);
-    volatile uint16_t *TBCCTL0 = (uint16_t *)(HEARTBEAT_TIMER_BASE_ADDR + OFS_TB0CCTL0);
-
     // Disable the timer before configuring to avoid unexpected behavior
-    *TBCTL &= ~MC_3;
+    *TBxCTL &= ~MC_3;
 
     // Calculate the compare register value needed to achieve the desired timing
     // By default, we're going to use a 16-bit counter.
@@ -47,23 +47,21 @@ void heartbeat_init(const uint16_t half_period_ms)
 
     // Set the compare regsiter value so the interrupt fires and the counter restarts
     // every half-period of our heartbeat LED.
-    *TBCCR0 = heartbeat_half_period_clock_cycles;
+    *TBxCCR0 = heartbeat_half_period_clock_cycles;
 
     // Enable the capture/compare interrupt
-    *TBCCTL0 |= CCIE;
+    *TBxCCTL0 |= CCIE;
 
     // Select the 32.768 kHz auxiliary clock as the clock source.
-    *TBCTL |= TBSSEL__ACLK;
+    *TBxCTL |= TBSSEL__ACLK;
 
     // Use up counter mode
-    *TBCTL |= MC__UP;
+    *TBxCTL |= MC__UP;
 
     // Configure the heartbeat LED pin as an output
-    volatile uint16_t *PDIR = (uint16_t *)(HEARTBEAT_PORT_BASE_ADDR + OFS_P1DIR);
     *PDIR |= HEARTBEAT_PIN;
 
     // Turn LED off on initialiation
-    volatile uint16_t *POUT = (uint16_t *)(HEARTBEAT_PORT_BASE_ADDR + OFS_P1OUT);
     *POUT &= ~HEARTBEAT_PIN;
 }
 
@@ -77,11 +75,8 @@ void heartbeat_init(const uint16_t half_period_ms)
 #pragma vector = HEARTBEAT_TIMER_VECTOR
 __interrupt void heartbeat_isr(void)
 {
-    volatile uint16_t *POUT = (uint16_t *)(HEARTBEAT_PORT_BASE_ADDR + OFS_P1OUT);
-
     *POUT ^= HEARTBEAT_PIN;
 
-    // Clear the interrupt flag :)
-    volatile uint16_t *TBCCTL0 = (uint16_t *)(HEARTBEAT_TIMER_BASE_ADDR + OFS_TB0CCTL0);
-    *TBCCTL0 &= ~CCIFG;
+    // Clear the interrupt flag
+    *TBxCCTL0 &= ~CCIFG;
 }
