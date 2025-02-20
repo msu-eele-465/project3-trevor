@@ -350,6 +350,9 @@ CCS has a clangd extension installed by default that can format code. A `.clang-
 
 You may format your code in CSS by running "Format document" or "Format selection" (ctrl+shift+p, then type format).
 
+> [!NOTE]
+> You must first download the clangd server (ctrl+shift+p -> clangd: Download language server)
+
 ## Headers
 All modules should have an associated header file that has a `.h` file extension. `main.c` should be not have a `main.h` header.
 
